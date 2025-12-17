@@ -21,5 +21,7 @@ return {
 
     -- Load the colorscheme
     vim.cmd("colorscheme kanagawa-dragon") -- Or kanagawa-lotus, kanagawa-dragon, etc.
+    vim.cmd("hi Normal guibg=#0e0d0d")
+    vim.cmd("hi NormalNC guibg=#0a0a0c")
   end,
 }
