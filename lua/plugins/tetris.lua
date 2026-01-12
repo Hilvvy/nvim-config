@@ -1,5 +1,7 @@
-require("lazy").setup({
-  -- ... other plugins
-  "alec-gibson/nvim-tetris",
-  -- ...
-})
+
+return {
+  {
+    "alec-gibson/nvim-tetris",
+    cmd = "Tetris", -- lo carga solo cuando ejecutás :Tetris
+  },
+}

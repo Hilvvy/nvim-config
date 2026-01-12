@@ -1,17 +1,15 @@
--- ~/.config/nvim/lua/plugins/kanagawa.lua (create this file if it doesn't exist)
+-- ~/.config/nvim/lua/plugins/kanagawa.lua
 return {
   "rebelot/kanagawa.nvim",
-  lazy = false, -- Load immediately for colorscheme
-  priority = 1000, -- High priority
+  lazy = false,
+  priority = 1000,
   config = function()
-    -- Set these before setup for correct sizing
-    vim.o.laststatus = 2 -- Always show status line
-    vim.o.cmdheight = 1 -- Adjust command height
+    vim.o.laststatus = 2
+    vim.o.cmdheight = 1
 
     require("kanagawa").setup({
-      compile = true, -- Enable compilation for best results (run :KanagawaCompile after config changes)
-      theme = "dragon", -- Or "lotus", "dragon", "all"
-      -- Other options like functionStyle, dimInactive, etc. can go here [1, 6]
+      compile = true,
+      theme = "dragon",
       functionStyle = {
         bold = true,
         italic = true,
@@ -19,9 +17,50 @@ return {
       dimInactive = true,
     })
 
-    -- Load the colorscheme
-    vim.cmd("colorscheme kanagawa-dragon") -- Or kanagawa-lotus, kanagawa-dragon, etc.
-    vim.cmd("hi Normal guibg=#0e0d0d")
-    vim.cmd("hi NormalNC guibg=#0a0a0c")
+    vim.cmd("colorscheme kanagawa-dragon")
+
+    -- =========================
+    -- 🎨 Fondo sólido (default)
+    -- =========================
+    local bg_solid = {
+      normal = "#0e0d0d",
+      normal_nc = "#0a0a0c",
+    }
+
+    local is_transparent = false
+
+    local function set_solid_bg()
+      vim.api.nvim_set_hl(0, "Normal", { bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "NormalNC", { bg = bg_solid.normal_nc })
+      vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "SignColumn", { bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "FoldColumn", { bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "LineNr", { bg = bg_solid.normal })
+      is_transparent = false
+    end
+
+    local function set_transparent_bg()
+      vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+      vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
+      vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
+      vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
+      vim.api.nvim_set_hl(0, "FoldColumn", { bg = "none" })
+      vim.api.nvim_set_hl(0, "LineNr", { bg = "none" })
+      is_transparent = true
+    end
+
+    -- 🟢 Estado inicial
+    set_solid_bg()
+
+    -- =========================
+    -- 🔀 Toggle con una tecla
+    -- =========================
+    vim.keymap.set("n", "<leader>ut", function()
+      if is_transparent then
+        set_solid_bg()
+      else
+        set_transparent_bg()
+      end
+    end, { desc = "Toggle fondo transparente" })
   end,
 }
