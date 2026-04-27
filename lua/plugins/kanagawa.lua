@@ -30,22 +30,38 @@ return {
     local is_transparent = false
 
     local function set_solid_bg()
+      -- base
       vim.api.nvim_set_hl(0, "Normal", { bg = bg_solid.normal })
       vim.api.nvim_set_hl(0, "NormalNC", { bg = bg_solid.normal_nc })
       vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = bg_solid.normal })
       vim.api.nvim_set_hl(0, "SignColumn", { bg = bg_solid.normal })
       vim.api.nvim_set_hl(0, "FoldColumn", { bg = bg_solid.normal })
       vim.api.nvim_set_hl(0, "LineNr", { bg = bg_solid.normal })
+
+      -- floats / snacks
+      vim.api.nvim_set_hl(0, "NormalFloat", { bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "FloatBorder", { fg = "#54546D", bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "SnacksNormal", { bg = bg_solid.normal })
+      vim.api.nvim_set_hl(0, "SnacksBorder", { bg = bg_solid.normal })
+
       is_transparent = false
     end
 
     local function set_transparent_bg()
+      -- base
       vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
       vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
       vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
       vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
       vim.api.nvim_set_hl(0, "FoldColumn", { bg = "none" })
       vim.api.nvim_set_hl(0, "LineNr", { bg = "none" })
+
+      -- floats / snacks (con borde bonito)
+      vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+      vim.api.nvim_set_hl(0, "FloatBorder", { fg = "#54546D", bg = "none" })
+      vim.api.nvim_set_hl(0, "SnacksNormal", { bg = "none" })
+      vim.api.nvim_set_hl(0, "SnacksBorder", { bg = "none" })
+
       is_transparent = true
     end
 
@@ -53,7 +69,7 @@ return {
     set_solid_bg()
 
     -- =========================
-    -- 🔀 Toggle con una tecla
+    -- 🔀 Toggle con tecla
     -- =========================
     vim.keymap.set("n", "<leader>ut", function()
       if is_transparent then
