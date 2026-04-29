@@ -23,8 +23,8 @@ return {
     -- 🎨 Fondo sólido (default)
     -- =========================
     local bg_solid = {
-      normal = "#0e0d0d",
-      normal_nc = "#0a0a0c",
+      normal = "#171717",
+      normal_nc = "#171717",
     }
 
     local is_transparent = false
