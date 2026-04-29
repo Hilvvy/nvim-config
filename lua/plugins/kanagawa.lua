@@ -19,6 +19,12 @@ return {
 
     vim.cmd("colorscheme kanagawa-dragon")
 
+    vim.api.nvim_set_hl(0, "SnacksDashboardHeader", { fg = "#c4b5fd" })
+    vim.api.nvim_set_hl(0, "SnacksDashboardDesc", { fg = "#c4b5fd" })
+    vim.api.nvim_set_hl(0, "SnacksDashboardKey", { fg = "#a78bfa" })
+    vim.api.nvim_set_hl(0, "SnacksDashboardIcon", { fg = "#c4b5fd" })
+    vim.api.nvim_set_hl(0, "SnacksDashboardFooter", { fg = "#a78bfa" })
+
     -- =========================
     -- 🎨 Fondo sólido (default)
     -- =========================

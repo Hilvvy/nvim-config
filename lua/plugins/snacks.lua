@@ -19,7 +19,42 @@ return {
       },
     },
     opts = {
-      dashboard = { enabled = true },
+      dashboard = {
+        enabled = true,
+        preset = {
+          header = [[
+██╗  ██╗██╗██╗     ██╗   ██╗██╗███╗   ███╗
+██║  ██║██║██║     ██║   ██║██║████╗ ████║
+███████║██║██║     ██║   ██║██║██╔████╔██║
+██╔══██║██║██║     ██║   ██║██║██║╚██╔╝██║
+██║  ██║██║███████╗╚██████╔╝██║██║ ╚═╝ ██║
+╚═╝  ╚═╝╚═╝╚══════╝ ╚═════╝ ╚═╝╚═╝     ╚═╝
+]],
+          keys = {
+            { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+            { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+            { icon = " ", key = "p", desc = "Projects", action = ":lua Snacks.dashboard.pick('projects')" },
+            { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
+            { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+            {
+              icon = " ",
+              key = "c",
+              desc = "Config",
+              action = ":lua Snacks.dashboard.pick('files', { cwd = vim.fn.stdpath('config') })",
+            },
+            { icon = " ", key = "s", desc = "Restore Session", action = ":lua require('persistence').load()" },
+            { icon = " ", key = "x", desc = "Lazy Extras", action = ":LazyExtras" },
+            { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+
+            -- extras útiles
+            { icon = " ", key = "e", desc = "Explorer", action = ":lua Snacks.explorer()" },
+            { icon = " ", key = "d", desc = "Debug Continue", action = ":lua require('dap').continue()" },
+            { icon = " ", key = "k", desc = "Keymaps", action = ":lua Snacks.dashboard.pick('keymaps')" },
+
+            { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+          },
+        },
+      },
       explorer = {
         enabled = true,
         replace_netrw = false, -- Evita que snacks se abra solo
