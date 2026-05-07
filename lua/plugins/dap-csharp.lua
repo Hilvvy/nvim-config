@@ -1,4 +1,4 @@
--- plugins\dap-csharp.lua
+-- plugins/dap-csharp.lua
 return {
   { "mfussenegger/nvim-dap" },
   {
@@ -36,31 +36,19 @@ return {
       local dap = require("dap")
       local dapui = require("dapui")
 
-      -- Detectar OS
       local sep = package.config:sub(1, 1)
       local is_windows = sep == "\\"
 
-      -- Path a netcoredbg compatible con Windows y Linux/Mac
-      local netcoredbg_path = vim.fn.stdpath("data")
-        .. sep
-        .. "mason"
-        .. sep
-        .. "packages"
-        .. sep
-        .. "netcoredbg"
-        .. sep
-        .. "netcoredbg"
-        .. sep
-        .. "netcoredbg"
-        .. (is_windows and ".exe" or "")
+      local netcoredbg_cmd = is_windows
+          and (vim.fn.stdpath("data") .. sep .. "mason" .. sep .. "packages" .. sep .. "netcoredbg" .. sep .. "netcoredbg" .. sep .. "netcoredbg.exe")
+        or "netcoredbg"
 
       dap.adapters.coreclr = {
         type = "executable",
-        command = netcoredbg_path,
+        command = netcoredbg_cmd,
         args = { "--interpreter=vscode" },
       }
 
-      -- Función para construir el path al dll
       local function get_dll_path()
         local cwd = vim.fn.getcwd()
         local project_name = vim.fn.fnamemodify(cwd, ":t")
@@ -68,6 +56,7 @@ return {
         local found = vim.fn.glob(debug_path .. "net*", false, true)
         local framework = #found > 0 and vim.fn.fnamemodify(found[1], ":t") or "net9.0"
         local default = debug_path .. framework .. sep .. project_name .. ".dll"
+
         return vim.fn.input("Path to dll: ", default, "file")
       end
 
@@ -81,7 +70,6 @@ return {
             return vim.fn.getcwd()
           end,
           stopAtEntry = false,
-          console = "integratedTerminal",
           justMyCode = false,
         },
         {
@@ -93,7 +81,6 @@ return {
             return vim.fn.getcwd()
           end,
           stopAtEntry = true,
-          console = "integratedTerminal",
           justMyCode = false,
         },
         {
@@ -121,18 +108,21 @@ return {
         },
       }
 
-      -- Fix para Windows: nvim-dap usa forward slashes pero netcoredbg necesita backslashes
       if is_windows then
         local session_mod = require("dap.session")
         local orig_bp = session_mod.set_breakpoints
+
         session_mod.set_breakpoints = function(self, bps, on_done)
           local orig_get_name = vim.api.nvim_buf_get_name
+
           vim.api.nvim_buf_get_name = function(buf)
             local name = orig_get_name(buf)
             return name:gsub("/", "\\")
           end
+
           local result = orig_bp(self, bps, on_done)
           vim.api.nvim_buf_get_name = orig_get_name
+
           return result
         end
       end
@@ -140,48 +130,62 @@ return {
       dap.listeners.before.attach.dapui_config = function()
         dapui.open()
       end
+
       dap.listeners.before.launch.dapui_config = function()
         dapui.open()
       end
-      dap.listeners.before.event_terminated.dapui_config = function()
-        dapui.close()
-      end
-      dap.listeners.before.event_exited.dapui_config = function()
-        dapui.close()
-      end
+
+      -- No cierro dapui automáticamente para que podás ver consola/repl al terminar.
+      -- dap.listeners.before.event_terminated.dapui_config = function()
+      --   dapui.close()
+      -- end
+      -- dap.listeners.before.event_exited.dapui_config = function()
+      --   dapui.close()
+      -- end
 
       local map = vim.keymap.set
+
       map("n", "<F5>", function()
         dap.continue()
       end, { desc = "Debug: Continue" })
+
       map("n", "<F10>", function()
         dap.step_over()
       end, { desc = "Debug: Step Over" })
+
       map("n", "<F11>", function()
         dap.step_into()
       end, { desc = "Debug: Step Into" })
+
       map("n", "<F12>", function()
         dap.step_out()
       end, { desc = "Debug: Step Out" })
+
       map("n", "<leader>db", function()
         dap.toggle_breakpoint()
       end, { desc = "Debug: Toggle Breakpoint" })
+
       map("n", "<leader>dB", function()
         dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
       end, { desc = "Debug: Conditional Breakpoint" })
+
       map("n", "<leader>du", function()
         dapui.toggle()
       end, { desc = "Debug: Toggle UI" })
+
       map("n", "<leader>dx", function()
         dap.terminate()
       end, { desc = "Debug: Terminate" })
+
       map("n", "<leader>da", function()
         local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
         local session = dap.session()
+
         if session then
           dap.terminate()
           vim.wait(500)
         end
+
         dap.run({
           type = "coreclr",
           request = "attach",
