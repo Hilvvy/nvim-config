@@ -1,41 +1,22 @@
 return {
-
   {
     "mfussenegger/nvim-dap-python",
+    ft = "python",
     dependencies = {
       "mfussenegger/nvim-dap",
       "rcarriga/nvim-dap-ui",
     },
     config = function()
       local dap = require("dap")
-      local dapui = require("dapui")
-
-      local sep = package.config:sub(1, 1)
-      local is_windows = sep == "\\"
+      local is_windows = package.config:sub(1, 1) == "\\"
 
       local function get_python_path()
         local cwd = vim.fn.getcwd()
+        local executable = is_windows and "python.exe" or "python"
+        local bin_dir = is_windows and "Scripts" or "bin"
 
-        local venv_paths = {
-          cwd
-            .. sep
-            .. ".venv"
-            .. sep
-            .. (is_windows and "Scripts" or "bin")
-            .. sep
-            .. "python"
-            .. (is_windows and ".exe" or ""),
-          cwd
-            .. sep
-            .. "venv"
-            .. sep
-            .. (is_windows and "Scripts" or "bin")
-            .. sep
-            .. "python"
-            .. (is_windows and ".exe" or ""),
-        }
-
-        for _, path in ipairs(venv_paths) do
+        for _, venv in ipairs({ ".venv", "venv" }) do
+          local path = table.concat({ cwd, venv, bin_dir, executable }, package.config:sub(1, 1))
           if vim.fn.executable(path) == 1 then
             return path
           end
@@ -44,7 +25,7 @@ return {
         return is_windows and "python" or "python3"
       end
 
-      require("dap-python").setup(get_python_path())
+      require("dap-python").setup("debugpy-adapter")
 
       dap.configurations.python = {
         {
@@ -72,26 +53,10 @@ return {
           request = "launch",
           name = "Launch module (auto)",
           module = function()
-            local file = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":p")
-            local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p")
-
-            file = file:gsub("\\", "/")
-            cwd = cwd:gsub("\\", "/")
-
-            if not cwd:match("/$") then
-              cwd = cwd .. "/"
-            end
-
-            local rel = file
-
-            if rel:sub(1, #cwd) == cwd then
-              rel = rel:sub(#cwd + 1)
-            end
-
-            rel = rel:gsub("%.py$", "")
-            rel = rel:gsub("/", ".")
-
-            return rel
+            local file = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":p"):gsub("\\", "/")
+            local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p"):gsub("\\", "/"):gsub("/$", "") .. "/"
+            local relative = file:sub(1, #cwd) == cwd and file:sub(#cwd + 1) or file
+            return relative:gsub("%.py$", ""):gsub("/", ".")
           end,
           cwd = function()
             return vim.fn.getcwd()
@@ -105,73 +70,20 @@ return {
           request = "launch",
           name = "Debug pytest current file",
           module = "pytest",
-          args = {
-            "${file}",
-            "-v",
-          },
+          args = { "${file}", "-v" },
           pythonPath = get_python_path,
           console = "integratedTerminal",
           justMyCode = false,
         },
       }
 
-      dap.listeners.before.attach.dapui_config = function()
-        dapui.open()
-      end
-
-      dap.listeners.before.launch.dapui_config = function()
-        dapui.open()
-      end
-
-      dap.listeners.before.event_terminated.dapui_config = function()
-        dapui.close()
-      end
-
-      dap.listeners.before.event_exited.dapui_config = function()
-        dapui.close()
-      end
-
-      local map = vim.keymap.set
-
-      map("n", "<F5>", function()
-        dap.continue()
-      end, { desc = "Debug: Continue" })
-
-      map("n", "<F10>", function()
-        dap.step_over()
-      end, { desc = "Debug: Step Over" })
-
-      map("n", "<F11>", function()
-        dap.step_into()
-      end, { desc = "Debug: Step Into" })
-
-      map("n", "<F12>", function()
-        dap.step_out()
-      end, { desc = "Debug: Step Out" })
-
-      map("n", "<leader>db", function()
-        dap.toggle_breakpoint()
-      end, { desc = "Debug: Toggle Breakpoint" })
-
-      map("n", "<leader>dB", function()
-        dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
-      end, { desc = "Debug: Conditional Breakpoint" })
-
-      map("n", "<leader>du", function()
-        dapui.toggle()
-      end, { desc = "Debug: Toggle UI" })
-
-      map("n", "<leader>dx", function()
-        dap.terminate()
-      end, { desc = "Debug: Terminate" })
-
-      map("n", "<leader>dpf", function()
+      vim.keymap.set("n", "<leader>dpf", function()
         require("dap-python").test_method()
-      end, { desc = "Debug Python: Test Method" })
+      end, { buffer = 0, desc = "Debug Python: Test Method" })
 
-      map("n", "<leader>dpc", function()
+      vim.keymap.set("n", "<leader>dpc", function()
         require("dap-python").test_class()
-      end, { desc = "Debug Python: Test Class" })
+      end, { buffer = 0, desc = "Debug Python: Test Class" })
     end,
   },
 }
