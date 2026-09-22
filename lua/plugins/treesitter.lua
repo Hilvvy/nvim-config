@@ -1,7 +1,10 @@
 -- lua/plugins/treesitter.lua
 return {
   "nvim-treesitter/nvim-treesitter",
-  -- Solo sobreescribimos opciones, no hacemos require ni setup manual
+  -- `main` requires Neovim 0.12. Keep the compatible branch while this
+  -- configuration targets Neovim 0.11.
+  branch = "master",
+  build = ":TSUpdate",
   opts = {
     ensure_installed = {
       "c",
@@ -14,6 +17,5 @@ return {
       "javascript",
       "html",
     },
-    -- El resto (highlight, indent, etc.) lo maneja LazyVim
   },
 }
