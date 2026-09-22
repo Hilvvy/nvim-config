@@ -12,9 +12,8 @@ con Python, Java y C#.
 - `tree-sitter-cli` 0.26 o posterior. En Windows se instala con Winget:
   `winget install tree-sitter.tree-sitter-cli`.
 - .NET SDK para C#. `netcoredbg` y `debugpy` se instalan mediante Mason al
-  iniciar por primera vez. Roslyn Language Server debe instalarse siguiendo
-  las instrucciones vigentes de su proyecto, ya que su paquete oficial de
-  NuGet no funciona actualmente como herramienta global en Windows.
+  iniciar por primera vez. Para Roslyn, ejecutá `:MasonInstall roslyn`; la
+  configuración añade el registro recomendado por roslyn.nvim.
 
 La configuración usa las ramas actuales de `nvim-treesitter` y Roslyn, ambas
 compatibles con Neovim 0.12.
