@@ -5,16 +5,19 @@ con Python, Java y C#.
 
 ## Requisitos
 
-- Neovim 0.11.x.
+- Neovim 0.12.x o posterior.
 - Git y `curl`.
 - Un compilador C en `PATH` para instalar parsers de Treesitter. En Windows,
   se recomienda `gcc` mediante MSYS2 o WinLibs/MinGW-w64.
-- .NET SDK para C#. Roslyn, `netcoredbg` y `debugpy` se instalan mediante Mason
-  al iniciar por primera vez.
+- `tree-sitter-cli` 0.26 o posterior. En Windows se instala con Winget:
+  `winget install tree-sitter.tree-sitter-cli`.
+- .NET SDK para C#. `netcoredbg` y `debugpy` se instalan mediante Mason al
+  iniciar por primera vez. Roslyn Language Server debe instalarse siguiendo
+  las instrucciones vigentes de su proyecto, ya que su paquete oficial de
+  NuGet no funciona actualmente como herramienta global en Windows.
 
-La configuración mantiene `nvim-treesitter` en la rama `master` y Roslyn en
-una revisión compatible con Neovim 0.11. Al actualizar Neovim a 0.12 o
-superior se pueden migrar ambos a sus versiones actuales.
+La configuración usa las ramas actuales de `nvim-treesitter` y Roslyn, ambas
+compatibles con Neovim 0.12.
 
 ## Mantenimiento
 

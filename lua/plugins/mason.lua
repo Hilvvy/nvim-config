@@ -10,14 +10,10 @@ return {
   {
     "mason-org/mason.nvim",
     opts = function(_, opts)
-      opts.registries = opts.registries or { "github:mason-org/mason-registry" }
-      append_unique(opts.registries, { "github:Crashdummyy/mason-registry" })
-
       opts.ensure_installed = opts.ensure_installed or {}
       append_unique(opts.ensure_installed, {
         "debugpy",
         "netcoredbg",
-        "roslyn",
       })
     end,
   },
