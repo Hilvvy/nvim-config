@@ -9,6 +9,8 @@ con Python, Java y C#.
 - Git y `curl`.
 - Un compilador C en `PATH` para instalar parsers de Treesitter. En Windows,
   se recomienda `gcc` mediante MSYS2 o WinLibs/MinGW-w64.
+- .NET SDK para C#. Roslyn, `netcoredbg` y `debugpy` se instalan mediante Mason
+  al iniciar por primera vez.
 
 La configuración mantiene `nvim-treesitter` en la rama `master` y Roslyn en
 una revisión compatible con Neovim 0.11. Al actualizar Neovim a 0.12 o
