@@ -6,10 +6,24 @@ return {
     config = function()
       local dap = require("dap")
       local is_windows = package.config:sub(1, 1) == "\\"
-      local netcoredbg = vim.fn.exepath("netcoredbg")
+      local netcoredbg
 
-      if netcoredbg == "" then
-        netcoredbg = is_windows and "netcoredbg.exe" or "netcoredbg"
+      if is_windows then
+        -- Mason's .cmd shim can exit before DAP completes its stdio handshake.
+        -- Call the actual executable instead.
+        netcoredbg = vim.fs.joinpath(
+          vim.fn.stdpath("data"),
+          "mason",
+          "packages",
+          "netcoredbg",
+          "netcoredbg",
+          "netcoredbg.exe"
+        )
+      else
+        netcoredbg = vim.fn.exepath("netcoredbg")
+        if netcoredbg == "" then
+          netcoredbg = "netcoredbg"
+        end
       end
 
       dap.adapters.coreclr = {
