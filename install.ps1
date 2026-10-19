@@ -151,7 +151,7 @@ if ($ConfigPath -ne $sourcePath) {
     }
     New-Item -ItemType Directory -Path $ConfigPath | Out-Null
     foreach ($name in @('init.lua', 'lua', 'asciiart.txt', 'lazy-lock.json', 'lazyvim.json',
-        '.neoconf.json', 'stylua.toml', 'README.md', 'LICENSE', 'install.ps1', 'scripts')) {
+        '.neoconf.json', 'stylua.toml', 'README.md', 'LICENSE', 'install.ps1', 'scripts', 'portable')) {
         Copy-Item -LiteralPath (Join-Path $sourcePath $name) -Destination $ConfigPath -Recurse
     }
 }

@@ -8,7 +8,60 @@ uniformes y una barra de estado cuyo modo cambia de color.
 Preparada para Windows x64 con Neovim >= 0.12, C#/.NET, Python y Java.
 Incluye soporte de TypeScript, JSON, Markdown y Tailwind mediante LazyVim Extras.
 
-## Instalar en Windows
+## Portable para USB (Windows x64)
+
+El paquete generado `dist/Hilvim-Portable.zip` contiene Neovim, Hilvim,
+plugins, parsers, Git/Lazygit, Node, Python/debugpy/ruff, Java, SDKs/runtimes
+.NET y GCC. No requiere Winget, instalaciones globales ni permisos de
+administrador en la PC donde se usa.
+
+1. Extraé **todo** el ZIP; no ejecutes archivos desde dentro del ZIP.
+2. Copiá la carpeta a tu USB o al disco de la PC.
+3. Abrí `Hilvim.cmd`. `Comprobar.cmd` verifica las herramientas incluidas.
+4. Si querés dejarlo en esa PC, ejecutá `Instalar-en-esta-PC.cmd`: copia una
+   versión limpia a tu usuario y crea un acceso directo sin administrador.
+
+Desde una terminal también podés pasarle un proyecto:
+
+```powershell
+.\Hilvim.cmd C:\ruta\a\mi-proyecto
+```
+
+El lanzador aísla configuración, datos, caché, temporales y runtimes en su
+carpeta. No altera el PATH global ni la configuración de Neovim del equipo.
+Los plugins ya vienen incluidos; el editor funciona sin Internet. Descargar
+dependencias de proyectos o usar Copilot/Git remoto sí requiere red.
+No se incluyen credenciales, entornos de proyectos, workloads Android/iOS,
+Visual Studio ni Ant. Los SDKs exactos y la versión de Java se pueden consultar
+en el paquete. Un `global.json` que fije otro SDK puede requerir agregarlo.
+Copilot es opt-in en el portable: `$env:HILVIM_COPILOT='1'; .\Hilvim.cmd`,
+seguido de `:Copilot auth` con tu propia cuenta. La completación local funciona
+sin activarlo.
+La PC debe permitir ejecutar programas y PowerShell; el paquete no elude
+restricciones de la universidad. La fuente y el emulador de terminal los elige
+esa PC; una Nerd Font mejora los iconos, pero no es obligatoria para editar.
+
+Después del uso, `user`, `state` y `cache` pueden contener información personal
+o tokens. Para compartir, usá el ZIP original limpio, no una copia ya usada.
+Para mejor rendimiento, copiá la carpeta desde la USB al disco local.
+
+Para reconstruirlo en la PC preparada con Hilvim:
+
+```powershell
+.\scripts\build-portable.ps1 -Zip
+# Opcional: usar un JDK Windows x64 ya disponible (con sus licencias):
+.\scripts\build-portable.ps1 -Zip -JdkPath C:\ruta\al\openjdk
+# Retomar una construcción interrumpida en la misma carpeta:
+.\scripts\build-portable.ps1 -Resume -Zip -JdkPath C:\ruta\al\openjdk
+```
+
+El constructor verifica las descargas y hace una prueba aislada: rutas,
+ejecutables incluidos, parsers, compilador C, LSP Python y handshake de los
+depuradores Python/.NET. Necesita las herramientas de desarrollo instaladas
+en la PC de construcción, espacio en disco y red para descargas pendientes.
+Los binarios generados se excluyen de Git; el código del constructor sí se versiona.
+
+## Instalación convencional en Windows
 
 Necesitás conexión a Internet, PowerShell 5.1 o posterior y
 [Winget](https://learn.microsoft.com/windows/package-manager/winget/).

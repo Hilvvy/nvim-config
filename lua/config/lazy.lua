@@ -36,9 +36,10 @@ require("lazy").setup({
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- check for plugin updates periodically
+    enabled = vim.env.HILVIM_PORTABLE ~= "1", -- portable bundles work offline
     notify = false, -- notify on update
   }, -- automatically check for plugin updates
+  change_detection = { enabled = vim.env.HILVIM_PORTABLE ~= "1" },
   performance = {
     rtp = {
       -- disable some rtp plugins

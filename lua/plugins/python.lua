@@ -25,7 +25,10 @@ return {
         return is_windows and "python" or "python3"
       end
 
-      require("dap-python").setup("debugpy-adapter")
+      local adapter_python = vim.env.HILVIM_PORTABLE == "1"
+          and vim.fs.joinpath(vim.env.HILVIM_ROOT, "tools", "python", "python.exe")
+        or "debugpy-adapter"
+      require("dap-python").setup(adapter_python)
 
       dap.configurations.python = {
         {

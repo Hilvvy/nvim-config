@@ -8,8 +8,16 @@ end
 
 return {
   {
+    "mason-org/mason-lspconfig.nvim",
+    enabled = vim.env.HILVIM_PORTABLE ~= "1",
+  },
+  {
     "mason-org/mason.nvim",
     opts = function(_, opts)
+      if vim.env.HILVIM_PORTABLE == "1" then
+        opts.ensure_installed = {}
+        return
+      end
       opts.ensure_installed = opts.ensure_installed or {}
       append_unique(opts.ensure_installed, {
         "debugpy",

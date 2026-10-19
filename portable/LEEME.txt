@@ -1,0 +1,42 @@
+HILVIM PORTABLE - WINDOWS X64
+
+1. Extrae TODA la carpeta del ZIP. No abras Hilvim desde dentro del ZIP.
+2. Copiala a una carpeta con permiso de escritura, en tu PC o USB.
+3. Abre Hilvim.cmd. No necesita instalar Neovim ni permisos de administrador.
+4. Comprobar.cmd revisa que se usen las herramientas del paquete.
+5. Opcional: Instalar-en-esta-PC.cmd copia una version limpia a tu usuario
+   y crea un acceso directo en el escritorio, sin administrador.
+   No reemplaza otras instalaciones ni copia tokens de una USB ya usada.
+
+Desde una terminal: Hilvim.cmd C:\ruta\a\tu\proyecto
+
+Incluye Hilvim, Neovim, Git/Lazygit, Node, Python/debugpy/ruff, JDK OpenJDK,
+SDKs .NET del equipo de construccion, runtime .NET 10 para Roslyn,
+GCC, buscadores, parsers, plugins y servidores de lenguaje.
+
+La configuracion esta en config\nvim. El dibujo es asciiart.txt.
+Configuracion, datos, cache y archivos temporales quedan en esta carpeta.
+El lanzador no cambia el PATH global, el registro ni la configuracion del PC.
+No contiene tus credenciales, sesiones, historial ni entornos personales.
+Copilot viene desactivado para uso offline. Para activarlo desde PowerShell:
+$env:HILVIM_COPILOT='1'; .\Hilvim.cmd
+Luego usa :Copilot auth; necesitas tu propia cuenta y conexion.
+
+El editor funciona sin Internet. Instalar dependencias de un proyecto,
+restaurar NuGet/npm/pip, usar Copilot o acceder a Git remoto requiere red.
+No incluye workloads Android/iOS, Visual Studio, Ant ni paquetes de proyectos.
+Los SDKs exactos incluidos aparecen con tools\dotnet\dotnet.exe --list-sdks.
+Un proyecto que fije otro SDK en global.json puede requerir descargarlo.
+
+Para iconos completos, selecciona una Nerd Font en la terminal de ese PC.
+Si no hay una, puede haber iconos faltantes; el editor sigue funcionando.
+El paquete no instala fuentes ni incluye Alacritty. El blur no esta incluido.
+Una PC con politicas que bloqueen ejecutables o PowerShell puede impedirlo.
+La velocidad de la USB afecta al arranque; conviene copiar la carpeta al disco.
+
+IMPORTANTE: cache, state y user pueden acumular datos y tokens despues de usarlo.
+Trata tu USB como informacion personal. No compartas tu copia usada.
+Para distribuir otra copia, genera de nuevo el ZIP limpio desde el repositorio.
+
+Para actualizar el paquete, reconstruirlo con scripts\build-portable.ps1.
+Se conservan los avisos de licencia de las herramientas incluidas.
