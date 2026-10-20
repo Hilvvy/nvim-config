@@ -6,18 +6,21 @@ return {
       filewatching = "auto",
     },
     config = function(_, opts)
+      local windows = vim.fn.has("win32") == 1
+      local machine = vim.uv.os_uname().machine
+      local rid = windows and "win-x64" or (machine == "aarch64" and "linux-arm64" or "linux-x64")
       local language_server = vim.fs.joinpath(
         vim.fn.stdpath("data"),
         "tools",
         "roslyn-language-server-5.12.0-1.26426.8",
         "tools",
         "net10.0",
-        "win-x64",
-        "Microsoft.CodeAnalysis.LanguageServer.exe"
+        rid,
+        "Microsoft.CodeAnalysis.LanguageServer" .. (windows and ".exe" or "")
       )
 
       vim.lsp.config("roslyn", {
-        -- The official Windows NuGet bundle is installed in stdpath("data")
+        -- The official platform-specific NuGet bundle is installed in stdpath("data")
         -- because the third-party Mason registry currently points at a 404 release.
         cmd = { language_server, "--stdio" },
         settings = {

@@ -76,6 +76,11 @@ Los binarios generados se excluyen de Git; el código del constructor sí se ver
 
 ## Instalación convencional en Windows
 
+El setup completo de terminal se mantiene en
+[`Hilvvy/hilvim`](https://github.com/Hilvvy/hilvim): instala el portátil fijado,
+Alacritty y una fuente opcional sin duplicar esta configuración. Los comandos
+de esta sección son el instalador de desarrollo, no ese setup ligero.
+
 Necesitás conexión a Internet, PowerShell 5.1 o posterior y
 [Winget](https://learn.microsoft.com/windows/package-manager/winget/).
 Descargá este repositorio o clonalo si ya tenés Git:
@@ -126,6 +131,21 @@ Después abrí una terminal nueva y ejecutá `nvim`. Elegí una Nerd Font en la
 terminal (por ejemplo Iosevka Nerd Font Mono) para los iconos y el dibujo.
 Copilot requiere autenticación propia; no se copian credenciales.
 La primera instalación puede tardar varios minutos.
+
+## Linux nativo (preview)
+
+El setup de `Hilvvy/hilvim` prepara esta configuración en Linux x86_64 con
+Neovim >=0.12 y herramientas del equipo. No usar el ZIP de Windows en Linux.
+Roslyn selecciona el paquete Linux en lugar del ejecutable Windows; para
+descargar su versión oficial fijada (sin instalar .NET ni SDKs):
+
+```bash
+bash scripts/install-roslyn.sh
+```
+
+Requiere el runtime .NET 10 instalado por separado. El instalador Roslyn verifica
+SHA-256 y no reemplaza una carpeta existente desconocida. Linux sigue en preview:
+faltan pruebas reales de editor/debuggers sobre una distribución Linux.
 
 ## Atajos
 
