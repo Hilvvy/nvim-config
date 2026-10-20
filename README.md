@@ -11,11 +11,15 @@ Incluye soporte de TypeScript, JSON, Markdown y Tailwind mediante LazyVim Extras
 ## Portable para USB (Windows x64)
 
 El paquete predeterminado `dist/Hilvim-Portable-Editor.zip` contiene Neovim,
-Hilvim, plugins, parsers, Git/Lazygit, servidores de lenguaje y debuggers.
-No incluye SDKs/runtimes .NET, JDK ni GCC: usa los lenguajes instalados en la
+Hilvim, plugins, parsers, Lazygit, servidores de lenguaje y debuggers.
+No incluye Git, Node, Python, SDKs/runtimes .NET, JDK ni GCC: usa los instalados en la
 PC, como un editor con extensiones. El editor no requiere administrador.
-Incluye Node y un Python privado como dependencias de las herramientas;
-ese Python no entra al PATH de tus proyectos ni reemplaza tus entornos virtuales.
+Git debe estar en el PATH para las funciones Git. Node es necesario para los
+servidores y herramientas JavaScript (también Pyright); Python 3 para debugpy
+y el lanzador jdtls. El módulo debugpy viene incluido, sin instalarlo en tu Python.
+Tree-sitter CLI y un compilador C solo hacen falta para compilar parsers nuevos;
+los parsers incluidos ya están compilados. El editor abre aunque falten estas
+dependencias y `Comprobar.cmd` informa lo disponible.
 
 1. Extraé **todo** el ZIP; no ejecutes archivos desde dentro del ZIP.
 2. Copiá la carpeta a tu USB o al disco de la PC.
@@ -56,12 +60,15 @@ Para reconstruirlo en la PC preparada con Hilvim:
 .\scripts\build-portable.ps1 -Zip
 # Retomar una construcción interrumpida en la misma carpeta:
 .\scripts\build-portable.ps1 -Resume -Zip
+# Reusar un ZIP Editor verificado con el mismo lazy-lock, sin recopia de apps:
+python scripts\repack-editor.py dist\Hilvim-Portable-Editor.zip dist\Hilvim-Portable-Editor-1.2.zip --extract
 # Opcional: paquete completo con SDKs/runtimes, JDK y GCC (mucho mas pesado):
 .\scripts\build-portable.ps1 -FullToolchains -OutputPath dist\Hilvim-Full -Zip -JdkPath C:\ruta\al\openjdk
 ```
 
 El constructor verifica las descargas, rutas portables, parsers, completación
-nativa y handshake de los depuradores Python/.NET. El perfil completo agrega
+nativa sin Git y handshake de los depuradores disponibles (Python requiere
+intérprete del host). El perfil completo agrega
 pruebas de compilación C/Java/C# y LSP Python. Necesita las herramientas que
 empaqueta instaladas en la PC de construcción, espacio en disco y red para
 descargas pendientes.

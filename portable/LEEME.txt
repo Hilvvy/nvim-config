@@ -10,15 +10,22 @@ HILVIM PORTABLE - WINDOWS X64
 
 Desde una terminal: Hilvim.cmd C:\ruta\a\tu\proyecto
 
-El perfil Editor (predeterminado) incluye Hilvim, Neovim, Git/Lazygit,
+El perfil Editor (predeterminado) incluye Hilvim, Neovim, Lazygit,
 debugpy, netcoredbg, Ruff, buscadores, parsers, plugins y servidores de lenguaje.
-Node y Python privados son dependencias de las herramientas, no entornos
-para tus proyectos. Python privado NO se agrega al PATH de los proyectos.
-No incluye SDKs/runtimes .NET, JDK ni GCC. Usa los instalados en la PC,
+No incluye Git, Node, Python, SDKs/runtimes .NET, JDK ni GCC.
+Usa los instalados en la PC,
 incluyendo sus entornos virtuales, JAVA_HOME, PATH y configuracion de Git.
 Para C#: Roslyn incluido necesita el runtime .NET 10 en la PC; compilar
 requiere ademas el SDK del proyecto. Tener solo un SDK 8/9 no basta para Roslyn.
 Para Java: el jdtls incluido requiere JDK 21 o posterior.
+Git: instalar Git y abrir una terminal nueva para usar Gitsigns/Lazygit.
+Node: necesario para Pyright, TypeScript, JSON, Tailwind y herramientas JS.
+Python 3: necesario para ejecutar debugpy y el lanzador de jdtls.
+debugpy ya viene incluido: no instala paquetes en el Python de la PC.
+Tree-sitter CLI y compilador C solo hacen falta para generar parsers nuevos;
+los parsers que ya vienen incluidos funcionan sin esas herramientas.
+Si faltan Git/Node/Python, el editor abre y la comprobacion los informa;
+las funciones que dependan de ellos requieren instalarlos por separado.
 Existe un perfil Full opcional del constructor con toolchains integrados.
 
 La configuracion esta en config\nvim. El dibujo es asciiart.txt.

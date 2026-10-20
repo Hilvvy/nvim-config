@@ -4,6 +4,7 @@ $check = $args.Count -eq 1 -and $args[0] -eq '--hilvim-check'
 $bundle = Split-Path $PSScriptRoot -Parent
 $env:HILVIM_PORTABLE = '1'
 $env:HILVIM_ROOT = $bundle
+$env:HILVIM_HOST_TOOLS = '1'
 $env:NVIM_APPNAME = 'nvim'
 foreach ($entry in @{
     XDG_CONFIG_HOME = 'config'; XDG_DATA_HOME = 'data'
@@ -24,11 +25,8 @@ foreach ($name in @('VIM', 'VIMRUNTIME', 'LUA_PATH', 'LUA_CPATH', 'NVIM', 'NVIM_
     [Environment]::SetEnvironmentVariable($name, $null, 'Process')
 }
 $bins = @('tools/nvim/bin', 'tools/bin', 'data/nvim-data/mason/bin')
-$fallbacks = @('tools/node', 'tools/git/cmd', 'tools/git/mingw64/bin', 'tools/git/usr/bin')
-$env:Path = (($bins | ForEach-Object { Join-Path $bundle $_ }) -join ';') + ';' + $env:Path + ';' +
-    (($fallbacks | ForEach-Object { Join-Path $bundle $_ }) -join ';')
-# Private Python is intentionally NOT added to PATH. debugpy/jdtls shims use
-# its absolute path, while project Python and virtualenvs come from the host.
+$env:Path = (($bins | ForEach-Object { Join-Path $bundle $_ }) -join ';') + ';' + $env:Path
+# Git, Node, Python and project toolchains all come from the host PATH.
 $nvim = Join-Path $bundle 'tools/nvim/bin/nvim.exe'
 if ($check) {
     & $nvim --headless -i NONE -c 'lua dofile(vim.env.HILVIM_ROOT .. [[/scripts/check-editor.lua]])'

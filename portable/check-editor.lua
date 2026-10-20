@@ -7,10 +7,10 @@ vim.defer_fn(function()
       assert(vim.fs.normalize(vim.fn.stdpath(key)):lower():sub(1, #root + 1) == root:lower() .. "/", key)
     end
     assert(vim.g.colors_name == "vague", "Missing theme")
-    for _, tool in ipairs({ "git", "rg", "fd", "lazygit", "node", "ruff", "tree-sitter" }) do
+    for _, tool in ipairs({ "rg", "fd", "lazygit", "ruff" }) do
       assert(vim.fn.executable(tool) == 1, "Missing editor dependency: " .. tool)
     end
-    for _, folder in ipairs({ "dotnet", "java", "gcc" }) do
+    for _, folder in ipairs({ "dotnet", "java", "gcc", "git", "node", "python" }) do
       assert(not vim.uv.fs_stat(root .. "/tools/" .. folder), "Unexpected project toolchain: " .. folder)
     end
     local function run(cmd)
@@ -18,12 +18,14 @@ vim.defer_fn(function()
       assert(result.code == 0, table.concat(cmd, " ") .. ": " .. (result.stderr or ""))
       return result.stdout or ""
     end
-    run({ "git", "--version" })
-    run({ "node", "--version" })
+    if vim.fn.executable("git") == 1 then
+      run({ "git", "--version" })
+    end
+    if vim.fn.executable("node") == 1 then
+      run({ "node", "--version" })
+    end
     run({ "ruff", "--version" })
-    local python = root .. "/tools/python/python.exe"
-    -- Isolate only the adapter interpreter, never the user's project environment.
-    run({ python, "-I", "-c", "import debugpy, ssl; print(debugpy.__version__)" })
+    local python = vim.fn.exepath("python")
     local function handshake(cmd)
       local output = ""
       local job = vim.fn.jobstart(cmd, {
@@ -45,7 +47,9 @@ vim.defer_fn(function()
       vim.fn.jobstop(job)
       assert(initialized, "Adapter handshake failed: " .. cmd[1])
     end
-    handshake({ python, "-I", "-m", "debugpy.adapter" })
+    if python ~= "" then
+      handshake({ python, "-I", root .. "/scripts/debugpy-launcher.py" })
+    end
     handshake({
       vim.fn.stdpath("data") .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe",
       "--interpreter=vscode",
@@ -65,18 +69,16 @@ vim.defer_fn(function()
             names[client.name] = true
           end
         end
-        return names.pyright and names.ruff
+        return (vim.fn.executable("node") == 0 or names.pyright) and names.ruff
       end, 100),
       "Python LSPs did not initialize"
     )
     require("dap-python")
     local dap = require("dap")
     dap.adapters.python(function(adapter)
-      assert(
-        adapter.command == python:gsub("/", "\\") or vim.fs.normalize(adapter.command) == python,
-        "Adapter interpreter"
-      )
+      assert(adapter.command == "python" or vim.fn.exepath(adapter.command) == python, "Adapter interpreter")
       assert(adapter.args[1] == "-I", "Adapter must isolate its private interpreter")
+      assert(adapter.args[2]:find("debugpy-launcher.py", 1, true), "Bundled debugpy with host Python")
     end, { request = "launch" })
     dap.adapters.python(function(adapter)
       assert(adapter.type == "server", "Python attach")
@@ -90,7 +92,7 @@ vim.defer_fn(function()
       end, 50),
       "Native completion"
     )
-    for _, tool in ipairs({ "dotnet", "java", "javac", "gcc", "python" }) do
+    for _, tool in ipairs({ "git", "node", "python", "dotnet", "java", "javac", "gcc", "tree-sitter" }) do
       io.stdout:write(
         "HOST "
           .. tool
@@ -119,7 +121,7 @@ vim.defer_fn(function()
       return #vim.lsp.get_clients() == 0
     end, 100)
     io.stdout:write(
-      "HILVIM_EDITOR_OK: portable editor, native completion, parsers and Python/.NET adapters; host toolchains\n"
+      "HILVIM_EDITOR_OK: editor, native completion, parsers, Ruff and adapters; host Git/runtimes/toolchains\n"
     )
   end, debug.traceback)
   if not ok then

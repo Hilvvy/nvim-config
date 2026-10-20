@@ -11,6 +11,7 @@ if ($manifest.profile -eq 'editor') {
 }
 $env:HILVIM_PORTABLE = '1'
 $env:HILVIM_ROOT = $bundle
+$env:HILVIM_HOST_TOOLS = ''
 $env:NVIM_APPNAME = 'nvim'
 $env:XDG_CONFIG_HOME = Join-Path $bundle 'config'
 $env:XDG_DATA_HOME = Join-Path $bundle 'data'

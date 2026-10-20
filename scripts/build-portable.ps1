@@ -20,7 +20,7 @@ if (Test-Path -LiteralPath $OutputPath) {
 }
 if ((Test-Path -LiteralPath $OutputPath) -and -not $Resume) { throw "Output already exists: $OutputPath. Choose a new directory or use -Resume for your unfinished build." }
 if (-not $FullToolchains) {
-    foreach ($folder in @('tools/gcc', 'tools/java', 'tools/dotnet')) {
+    foreach ($folder in @('tools/gcc', 'tools/java', 'tools/dotnet', 'tools/git', 'tools/node', 'tools/python')) {
         if (Test-Path -LiteralPath (Join-Path $OutputPath $folder)) { throw 'Cannot resume an editor build over a full toolchain bundle. Choose a new output directory.' }
     }
 }
@@ -60,30 +60,37 @@ New-Item -ItemType Directory -Force -Path $scripts | Out-Null
 Copy-Item -LiteralPath (Join-Path $source 'portable/launch.ps1') -Destination $scripts
 Copy-Item -LiteralPath (Join-Path $source 'portable/launch-editor.ps1') -Destination $scripts
 Copy-Item -LiteralPath (Join-Path $source 'portable/check-editor.lua') -Destination $scripts
+Copy-Item -LiteralPath (Join-Path $source 'portable/debugpy-launcher.py') -Destination $scripts
 Copy-Item -LiteralPath (Join-Path $source 'portable/check-portable.lua') -Destination $scripts
 Copy-Item -LiteralPath (Join-Path $source 'portable/install-local.ps1') -Destination $scripts
 foreach ($name in @('Hilvim.cmd', 'Comprobar.cmd', 'Instalar-en-esta-PC.cmd')) {
     Copy-Item -LiteralPath (Join-Path $source "portable/$name") -Destination $OutputPath
 }
 Copy-Item -LiteralPath (Join-Path $source 'portable/LEEME.txt') -Destination $OutputPath
-Write-Host 'Copying editor, Git and native tools...'
+Write-Host 'Copying editor and editor-native tools...'
 Copy-Tree (Split-Path (Split-Path (Tool 'nvim') -Parent) -Parent) (Join-Path $OutputPath 'tools/nvim')
+if ($FullToolchains) {
 $gitRoot = Split-Path (Split-Path (Tool 'git') -Parent) -Parent
 Copy-Tree $gitRoot (Join-Path $OutputPath 'tools/git')
+}
 # GCC needs its complete relocatable toolchain, not just gcc.exe.
 if ($FullToolchains) {
 $gccRoot = Split-Path (Split-Path (Tool 'gcc') -Parent) -Parent
 Copy-Tree $gccRoot (Join-Path $OutputPath 'tools/gcc')
 }
+if ($FullToolchains) {
 Copy-ToolDirectory 'node' 'node'
 $nodeVersion = (& (Tool 'node') --version).Trim()
 $nodeLicense = Join-Path $OutputPath 'tools/node/LICENSE'
 if (-not (Test-Path -LiteralPath $nodeLicense)) {
     Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/nodejs/node/$nodeVersion/LICENSE" -OutFile $nodeLicense -TimeoutSec 30
 }
+}
 $bin = Join-Path $OutputPath 'tools/bin'
 New-Item -ItemType Directory -Path $bin -Force | Out-Null
-foreach ($name in @('rg', 'fd', 'lazygit', 'tree-sitter')) {
+$nativeTools = @('rg', 'fd', 'lazygit')
+if ($FullToolchains) { $nativeTools += 'tree-sitter' }
+foreach ($name in $nativeTools) {
     $exe = Tool $name
     Copy-Item -LiteralPath $exe -Destination (Join-Path $bin "$name.exe")
     # Preserve distributed license notices alongside standalone binaries.
@@ -94,14 +101,18 @@ foreach ($name in @('rg', 'fd', 'lazygit', 'tree-sitter')) {
         Copy-Item -Destination $notices
 }
 
-Write-Host 'Preparing relocatable Python...'
+Write-Host 'Preparing debugpy adapter (host Python in Editor profile)...'
 $pythonRoot = Split-Path (Tool 'python') -Parent
+if ($FullToolchains) {
 $pythonDest = Join-Path $OutputPath 'tools/python'
 New-Item -ItemType Directory -Force -Path $pythonDest | Out-Null
 Get-ChildItem -LiteralPath $pythonRoot -File | Copy-Item -Destination $pythonDest
 Copy-Tree (Join-Path $pythonRoot 'Lib') (Join-Path $pythonDest 'Lib') @('site-packages')
 Copy-Tree (Join-Path $pythonRoot 'DLLs') (Join-Path $pythonDest 'DLLs')
 $pythonPackages = Join-Path $pythonDest 'Lib/site-packages'
+} else {
+    $pythonPackages = Join-Path $OutputPath 'data/nvim-data/mason/packages/debugpy/lib'
+}
 $debugpyReceipt = Get-Content -Raw -LiteralPath (Join-Path $data 'mason/packages/debugpy/mason-receipt.json') | ConvertFrom-Json
 $debugpyVersion = ($debugpyReceipt.source.id -split '@')[-1]
 Copy-Tree (Join-Path $data 'mason/packages/debugpy/venv/Lib/site-packages/debugpy') (Join-Path $pythonPackages 'debugpy')
@@ -174,6 +185,12 @@ Copy-Tree (Join-Path $data 'mason/share') (Join-Path $portableData 'mason/share'
 Copy-Tree (Join-Path $data 'lazy') (Join-Path $portableData 'lazy')
 # Blink verifies its native library against the Git tag. Preserve public objects
 # and refs only: no remotes, credentials, reflogs, hooks or local Git configuration.
+$blinkSource = Join-Path $data 'lazy/blink.cmp'
+$blinkTag = (& (Tool 'git') -C $blinkSource describe --tags --exact-match).Trim()
+if ($LASTEXITCODE -or -not $blinkTag) { throw 'Blink must be on the tag matching its bundled native library.' }
+$blinkSHA = (& (Tool 'git') -C $blinkSource rev-parse HEAD).Trim()
+if ($LASTEXITCODE) { throw 'Cannot identify bundled Blink commit.' }
+if ($FullToolchains) {
 $blinkSourceGit = Join-Path $data 'lazy/blink.cmp/.git'
 $blinkDest = Join-Path $portableData 'lazy/blink.cmp'
 & (Tool 'git') -c init.templateDir= -C $blinkDest init -q
@@ -185,6 +202,7 @@ foreach ($file in @('HEAD', 'packed-refs', 'shallow')) {
     if (Test-Path -LiteralPath (Join-Path $blinkSourceGit $file)) {
         Copy-Item -LiteralPath (Join-Path $blinkSourceGit $file) -Destination (Join-Path $blinkDest '.git') -Force
     }
+}
 }
 Copy-Tree (Join-Path $data 'site') (Join-Path $portableData 'site')
 $roslyn = 'roslyn-language-server-5.12.0-1.26426.8'
@@ -218,6 +236,8 @@ $manifest = [ordered]@{
     name = 'Hilvim Portable'; platform = 'windows-x64'; built = (Get-Date -Format o)
     neovim = (& (Tool 'nvim') --version | Select-Object -First 1)
     profile = $(if ($FullToolchains) { 'full' } else { 'editor' })
+    hostTools = (-not $FullToolchains)
+    blink = @{ tag = $blinkTag; sha = $blinkSHA }
     debugpy = $debugpyVersion; ruff = '0.11.13'
     note = 'No credentials, sessions, user caches or Python user packages are included.'
 }

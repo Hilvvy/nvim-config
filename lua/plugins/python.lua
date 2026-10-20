@@ -25,8 +25,9 @@ return {
         return is_windows and "python" or "python3"
       end
 
-      local adapter_python = vim.env.HILVIM_PORTABLE == "1"
-          and vim.fs.joinpath(vim.env.HILVIM_ROOT, "tools", "python", "python.exe")
+      local host_tools = vim.env.HILVIM_HOST_TOOLS == "1"
+      local adapter_python = host_tools and get_python_path()
+        or vim.env.HILVIM_PORTABLE == "1" and vim.fs.joinpath(vim.env.HILVIM_ROOT, "tools", "python", "python.exe")
         or "debugpy-adapter"
       require("dap-python").setup(adapter_python)
       if vim.env.HILVIM_PORTABLE == "1" then
@@ -34,7 +35,11 @@ return {
         dap.adapters.python = function(callback, config)
           resolve_adapter(function(adapter)
             if adapter.type == "executable" then
-              table.insert(adapter.args, 1, "-I")
+              if host_tools then
+                adapter.args = { "-I", vim.fs.joinpath(vim.env.HILVIM_ROOT, "scripts", "debugpy-launcher.py") }
+              else
+                table.insert(adapter.args, 1, "-I")
+              end
             end
             callback(adapter)
           end, config)
