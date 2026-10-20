@@ -3,16 +3,23 @@ HILVIM PORTABLE - WINDOWS X64
 1. Extrae TODA la carpeta del ZIP. No abras Hilvim desde dentro del ZIP.
 2. Copiala a una carpeta con permiso de escritura, en tu PC o USB.
 3. Abre Hilvim.cmd. No necesita instalar Neovim ni permisos de administrador.
-4. Comprobar.cmd revisa que se usen las herramientas del paquete.
+4. Comprobar.cmd revisa el editor y muestra los lenguajes disponibles en la PC.
 5. Opcional: Instalar-en-esta-PC.cmd copia una version limpia a tu usuario
    y crea un acceso directo en el escritorio, sin administrador.
    No reemplaza otras instalaciones ni copia tokens de una USB ya usada.
 
 Desde una terminal: Hilvim.cmd C:\ruta\a\tu\proyecto
 
-Incluye Hilvim, Neovim, Git/Lazygit, Node, Python/debugpy/ruff, JDK OpenJDK,
-SDKs .NET del equipo de construccion, runtime .NET 10 para Roslyn,
-GCC, buscadores, parsers, plugins y servidores de lenguaje.
+El perfil Editor (predeterminado) incluye Hilvim, Neovim, Git/Lazygit,
+debugpy, netcoredbg, Ruff, buscadores, parsers, plugins y servidores de lenguaje.
+Node y Python privados son dependencias de las herramientas, no entornos
+para tus proyectos. Python privado NO se agrega al PATH de los proyectos.
+No incluye SDKs/runtimes .NET, JDK ni GCC. Usa los instalados en la PC,
+incluyendo sus entornos virtuales, JAVA_HOME, PATH y configuracion de Git.
+Para C#: Roslyn incluido necesita el runtime .NET 10 en la PC; compilar
+requiere ademas el SDK del proyecto. Tener solo un SDK 8/9 no basta para Roslyn.
+Para Java: el jdtls incluido requiere JDK 21 o posterior.
+Existe un perfil Full opcional del constructor con toolchains integrados.
 
 La configuracion esta en config\nvim. El dibujo es asciiart.txt.
 Configuracion, datos, cache y archivos temporales quedan en esta carpeta.
@@ -25,8 +32,9 @@ Luego usa :Copilot auth; necesitas tu propia cuenta y conexion.
 El editor funciona sin Internet. Instalar dependencias de un proyecto,
 restaurar NuGet/npm/pip, usar Copilot o acceder a Git remoto requiere red.
 No incluye workloads Android/iOS, Visual Studio, Ant ni paquetes de proyectos.
-Los SDKs exactos incluidos aparecen con tools\dotnet\dotnet.exe --list-sdks.
-Un proyecto que fije otro SDK en global.json puede requerir descargarlo.
+Los lenguajes/SDKs y las dependencias de proyectos los administra la PC.
+Si falta alguno, el editor abre igual, pero sus funciones de lenguaje pueden
+necesitar instalarlo. El paquete no instala SDKs silenciosamente.
 
 Para iconos completos, selecciona una Nerd Font en la terminal de ese PC.
 Si no hay una, puede haber iconos faltantes; el editor sigue funcionando.

@@ -1,7 +1,8 @@
 #requires -Version 5.1
 [CmdletBinding()]
-param([string]$BundlePath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'dist/Hilvim-Portable'))
+param([string]$BundlePath)
 $ErrorActionPreference = 'Stop'
+if (-not $BundlePath) { $BundlePath = Join-Path (Split-Path $PSScriptRoot -Parent) 'dist/Hilvim-Portable-Editor' }
 $BundlePath = [IO.Path]::GetFullPath($BundlePath).TrimEnd('\', '/')
 if (-not (Test-Path -LiteralPath (Join-Path $BundlePath 'bundle.json'))) { throw 'Missing bundle.json.' }
 foreach ($name in @('Hilvim.cmd', 'Comprobar.cmd', 'Instalar-en-esta-PC.cmd', 'scripts/launch.ps1')) {

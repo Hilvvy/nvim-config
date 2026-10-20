@@ -29,6 +29,17 @@ return {
           and vim.fs.joinpath(vim.env.HILVIM_ROOT, "tools", "python", "python.exe")
         or "debugpy-adapter"
       require("dap-python").setup(adapter_python)
+      if vim.env.HILVIM_PORTABLE == "1" then
+        local resolve_adapter = dap.adapters.python
+        dap.adapters.python = function(callback, config)
+          resolve_adapter(function(adapter)
+            if adapter.type == "executable" then
+              table.insert(adapter.args, 1, "-I")
+            end
+            callback(adapter)
+          end, config)
+        end
+      end
 
       dap.configurations.python = {
         {

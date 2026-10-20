@@ -1,14 +1,16 @@
 #requires -Version 5.1
 [CmdletBinding()]
 param(
-    [string]$OutputPath = (Join-Path (Split-Path $PSScriptRoot -Parent) 'dist/Hilvim-Portable'),
+    [string]$OutputPath,
     [switch]$Zip,
     [switch]$Resume,
-    [string]$JdkPath
+    [string]$JdkPath,
+    [switch]$FullToolchains
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $source = Split-Path $PSScriptRoot -Parent
+if (-not $OutputPath) { $OutputPath = Join-Path $source 'dist/Hilvim-Portable-Editor' }
 $OutputPath = [IO.Path]::GetFullPath($OutputPath).TrimEnd('\', '/')
 if ($OutputPath -eq $source -or $source.StartsWith($OutputPath + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Output must not be the source checkout or one of its parents.' }
 if (Test-Path -LiteralPath $OutputPath) {
@@ -17,6 +19,11 @@ if (Test-Path -LiteralPath $OutputPath) {
     if ($Resume -and -not (Test-Path -LiteralPath (Join-Path $OutputPath 'LEEME.txt'))) { throw 'Resume requires an existing Hilvim build.' }
 }
 if ((Test-Path -LiteralPath $OutputPath) -and -not $Resume) { throw "Output already exists: $OutputPath. Choose a new directory or use -Resume for your unfinished build." }
+if (-not $FullToolchains) {
+    foreach ($folder in @('tools/gcc', 'tools/java', 'tools/dotnet')) {
+        if (Test-Path -LiteralPath (Join-Path $OutputPath $folder)) { throw 'Cannot resume an editor build over a full toolchain bundle. Choose a new output directory.' }
+    }
+}
 if ($env:OS -ne 'Windows_NT' -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64') { throw 'Build on Windows x64.' }
 $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
     [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $env:Path
@@ -37,7 +44,7 @@ function Copy-Tree([string]$From, [string]$To, [string[]]$Exclude = @()) {
 function Copy-ToolDirectory([string]$Name, [string]$Folder) {
     Copy-Tree (Split-Path (Tool $Name) -Parent) (Join-Path $OutputPath "tools/$Folder")
 }
-foreach ($name in @('nvim', 'git', 'rg', 'fd', 'lazygit', 'tree-sitter', 'gcc', 'node', 'python', 'dotnet', 'curl.exe')) {
+foreach ($name in @('nvim', 'git', 'rg', 'fd', 'lazygit', 'tree-sitter', 'node', 'python', 'curl.exe')) {
     $null = Tool $name
 }
 Write-Host 'Building portable Hilvim from installed, verified tools...'
@@ -51,6 +58,8 @@ foreach ($name in @('init.lua', 'lua', 'asciiart.txt', 'lazy-lock.json', 'lazyvi
 $scripts = Join-Path $OutputPath 'scripts'
 New-Item -ItemType Directory -Force -Path $scripts | Out-Null
 Copy-Item -LiteralPath (Join-Path $source 'portable/launch.ps1') -Destination $scripts
+Copy-Item -LiteralPath (Join-Path $source 'portable/launch-editor.ps1') -Destination $scripts
+Copy-Item -LiteralPath (Join-Path $source 'portable/check-editor.lua') -Destination $scripts
 Copy-Item -LiteralPath (Join-Path $source 'portable/check-portable.lua') -Destination $scripts
 Copy-Item -LiteralPath (Join-Path $source 'portable/install-local.ps1') -Destination $scripts
 foreach ($name in @('Hilvim.cmd', 'Comprobar.cmd', 'Instalar-en-esta-PC.cmd')) {
@@ -62,8 +71,10 @@ Copy-Tree (Split-Path (Split-Path (Tool 'nvim') -Parent) -Parent) (Join-Path $Ou
 $gitRoot = Split-Path (Split-Path (Tool 'git') -Parent) -Parent
 Copy-Tree $gitRoot (Join-Path $OutputPath 'tools/git')
 # GCC needs its complete relocatable toolchain, not just gcc.exe.
+if ($FullToolchains) {
 $gccRoot = Split-Path (Split-Path (Tool 'gcc') -Parent) -Parent
 Copy-Tree $gccRoot (Join-Path $OutputPath 'tools/gcc')
+}
 Copy-ToolDirectory 'node' 'node'
 $nodeVersion = (& (Tool 'node') --version).Trim()
 $nodeLicense = Join-Path $OutputPath 'tools/node/LICENSE'
@@ -112,6 +123,7 @@ Copy-Tree (Split-Path $ruffExe.FullName -Parent) (Join-Path $OutputPath 'license
 Get-ChildItem -LiteralPath $pythonRoot -Filter 'vcruntime*.dll' |
     Copy-Item -Destination (Join-Path $OutputPath 'tools/nvim/bin')
 
+if ($FullToolchains) {
 Write-Host 'Copying .NET SDKs and runtimes...'
 $dotnetRoot = Split-Path (Tool 'dotnet') -Parent
 $dotnetDest = Join-Path $OutputPath 'tools/dotnet'
@@ -152,6 +164,7 @@ $jdkExtract = Join-Path $downloads ('jdk-' + [guid]::NewGuid().ToString('N'))
 Expand-Archive -LiteralPath $jdkArchive -DestinationPath $jdkExtract
 $jdkRoot = Get-ChildItem -LiteralPath $jdkExtract -Directory | Select-Object -First 1
 Copy-Tree $jdkRoot.FullName (Join-Path $OutputPath 'tools/java')
+}
 }
 
 Write-Host 'Copying plugins, parsers and language servers...'
@@ -204,7 +217,7 @@ foreach ($name in @('debugpy', 'ruff')) {
 $manifest = [ordered]@{
     name = 'Hilvim Portable'; platform = 'windows-x64'; built = (Get-Date -Format o)
     neovim = (& (Tool 'nvim') --version | Select-Object -First 1)
-    java = $jdk.name; javaSHA256 = $jdk.checksum; javaSource = $jdk.link
+    profile = $(if ($FullToolchains) { 'full' } else { 'editor' })
     debugpy = $debugpyVersion; ruff = '0.11.13'
     note = 'No credentials, sessions, user caches or Python user packages are included.'
 }

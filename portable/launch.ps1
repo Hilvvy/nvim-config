@@ -4,6 +4,11 @@ $NvimArguments = $args
 $ErrorActionPreference = 'Stop'
 $bundle = Split-Path $PSScriptRoot -Parent
 if (-not (Test-Path -LiteralPath (Join-Path $bundle 'bundle.json'))) { throw 'Incomplete Hilvim bundle.' }
+$manifest = Get-Content -Raw -LiteralPath (Join-Path $bundle 'bundle.json') | ConvertFrom-Json
+if ($manifest.profile -eq 'editor') {
+    & (Join-Path $PSScriptRoot 'launch-editor.ps1') @NvimArguments
+    exit $LASTEXITCODE
+}
 $env:HILVIM_PORTABLE = '1'
 $env:HILVIM_ROOT = $bundle
 $env:NVIM_APPNAME = 'nvim'
