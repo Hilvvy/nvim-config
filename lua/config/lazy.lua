@@ -15,6 +15,17 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Neovim's bytecode cache URI-encodes the full module path into one filename.
+-- Deep portable installations can exceed Windows' 255-character component limit,
+-- even when long paths are enabled. Keep fast caching for short installations.
+local portable_root = vim.env.HILVIM_ROOT or ""
+local long_portable_path = vim.fn.has("win32") == 1
+  and vim.env.HILVIM_PORTABLE == "1"
+  and #vim.uri_encode(vim.fs.normalize(portable_root), "rfc2396") > 100
+if long_portable_path and vim.loader then
+  vim.loader.enable(false)
+end
+
 require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
@@ -41,6 +52,7 @@ require("lazy").setup({
   }, -- automatically check for plugin updates
   change_detection = { enabled = vim.env.HILVIM_PORTABLE ~= "1" },
   performance = {
+    cache = { enabled = not long_portable_path },
     rtp = {
       -- disable some rtp plugins
       disabled_plugins = {
